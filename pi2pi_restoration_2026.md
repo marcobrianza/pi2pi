@@ -28,6 +28,32 @@ This system is typically used in the artwork
 
 ---
 
+## Operating System
+
+Latest Raspberry Pi OS (32-bit):
+
+https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2025-12-04/2025-12-04-raspios-trixie-armhf.img.xz
+
+Compatible with:
+- Raspberry Pi 1 → Raspberry Pi 5
+
+Original system reference (legacy version):
+
+https://downloads.raspberrypi.com/raspbian/images/raspbian-2018-11-15/2018-11-13-raspbian-stretch.zip
+
+---
+
+## Flashing SD Cards
+
+- Minimum: 8GB  
+- Tested: 16GB  
+
+Tool used:
+
+Balena Etcher 2.1.4  
+
+---
+
 ## Network Configuration
 
 - rpa → 10.0.0.1  
@@ -38,8 +64,9 @@ This system is typically used in the artwork
 ## Preparing USB Drives
 
 - Format: FAT32  
-- Label: **must be the same on both drives (for example: USB or PHOTOS)**  
-- Folders:
+- Label: must be the same on both drives (for example: USB or PHOTOS)  
+
+Create:
 
 ```
 /sending
@@ -55,13 +82,9 @@ This system is typically used in the artwork
 
 ## Script Creation
 
-Create the script:
-
 ```
 nano /home/pi/imagesync.sh
 ```
-
-Paste:
 
 ```bash
 #!/bin/sh
@@ -88,18 +111,26 @@ rsync --progress -ab --recursive --ignore-times $sender_path/. pi@$recipient_hos
 echo "Fin."
 ```
 
-Save:
-
-```
-CTRL + O
-ENTER
-CTRL + X
-```
-
-Make executable:
-
 ```
 chmod +x /home/pi/imagesync.sh
+```
+
+---
+
+## SSH (Passwordless)
+
+### rpa
+
+```
+ssh-keygen -t rsa
+ssh-copy-id pi@10.0.0.49
+```
+
+### rpb
+
+```
+ssh-keygen -t rsa
+ssh-copy-id pi@10.0.0.1
 ```
 
 ---
@@ -118,8 +149,6 @@ chmod +x /home/pi/imagesync.sh
 crontab -e
 ```
 
-Add:
-
 ```
 * * * * * /home/pi/imagesync.sh
 ```
@@ -130,9 +159,11 @@ Add:
 
 See:
 
-[sd-card-copy-macos_en.md](sd-card-copy-macos_en.md)
 
-⚠️ Both USB drives MUST have the same label (e.g. "USB", "PHOTOS", etc.).
+[sd-card-copy-macos_en.md](hsd-card-copy-macos_en.md)
+
+
+⚠️ Both USB drives MUST have the same label.
 
 ---
 
@@ -140,5 +171,5 @@ See:
 
 - No DHCP  
 - Static IP  
-- Simple rsync system  
+- Hardware-independent  
 - Bidirectional sync  
