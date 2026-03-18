@@ -160,7 +160,7 @@ crontab -e
 See:
 
 
-[sd-card-copy-macos_en.md](hsd-card-copy-macos_en.md)
+[sd-card-copy-macos_en.md](sd-card-copy-macos_en.md)
 
 
 ⚠️ Both USB drives MUST have the same label.
