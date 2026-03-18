@@ -2,6 +2,8 @@
 A self-contained network between two Raspberry Pis
 
 if you need to restore the system consider [pi2pi_restoration_2026.md](pi2pi_restoration_2026.md)
+
+
 Overview
 ========
 
