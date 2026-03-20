@@ -6,38 +6,22 @@ A self-contained network between two Raspberry Pis
 
 ## Overview
 
-This installation consists of two Raspberry Pis:
+Two Raspberry Pis exchange files bidirectionally via USB drives using rsync over SSH.
 
-- **rpa** → sender / receiver
-- **rpb** → sender / receiver
-
-Each device:
-- runs a script (`imagesync.sh`)
-- copies files from a USB drive (`/sending`)
-- syncs them to the other device (`/receiving`) using `rsync` over SSH
-
-The system is fully autonomous:
-- no internet required after setup
-- no DHCP server
-- no DNS / `.local` resolution
-
-Communication happens via **static IP addresses over Ethernet**.
-
-This system is typically used in the artwork  
-**"Personal Photographs" by Eva and Franco Mattes**.
+- rpa ↔ rpb
+- static IP
+- no DHCP
+- autonomous system
 
 ---
 
 ## Operating System
 
-Latest Raspberry Pi OS (32-bit):
+Download latest Raspberry Pi OS (32-bit):
 
 https://downloads.raspberrypi.com/raspios_armhf/images/raspios_armhf-2025-12-04/2025-12-04-raspios-trixie-armhf.img.xz
 
-Compatible with:
-- Raspberry Pi 1 → Raspberry Pi 5
-
-Original system reference (legacy version):
+Legacy reference:
 
 https://downloads.raspberrypi.com/raspbian/images/raspbian-2018-11-15/2018-11-13-raspbian-stretch.zip
 
@@ -45,26 +29,111 @@ https://downloads.raspberrypi.com/raspbian/images/raspbian-2018-11-15/2018-11-13
 
 ## Flashing SD Cards
 
-- Minimum: 8GB  
-- Tested: 16GB  
+Flash image using:
 
-Tool used:
+Balena Etcher 2.1.4
 
-Balena Etcher 2.1.4  
-
----
-
-## Network Configuration
-
-- rpa → 10.0.0.1  
-- rpb → 10.0.0.49  
+(minimum 8GB SD card, tested with 16GB)
 
 ---
 
-## Preparing USB Drives
+## First Boot and Initial Setup
+
+1. Insert SD card and boot Raspberry Pi
+2. Connect to internet (Ethernet recommended)
+
+Configure:
+
+- Country: USA  
+- Language: English  
+- Keyboard: US  
+- Location: New York  
+
+Create user:
+
+- username: pi  
+- password: pi  
+
+Then update system:
+
+```
+sudo apt update && sudo apt upgrade -y
+sudo reboot
+```
+
+---
+
+## Hostname Configuration
+
+Run:
+
+```
+sudo raspi-config
+```
+
+Set:
+
+- rpa → hostname: rpa  
+- rpb → hostname: rpb  
+
+Enable SSH:
+
+- Interface Options → SSH → Enable
+
+Reboot if required.
+
+---
+
+## Network Configuration (Static IP)
+
+Check connection name:
+
+```
+nmcli connection show
+```
+
+### rpa
+
+```
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 10.0.0.1/24 ipv4.method manual
+sudo nmcli con down "Wired connection 1"
+sudo nmcli con up "Wired connection 1"
+sudo reboot
+```
+
+### rpb
+
+```
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 10.0.0.49/24 ipv4.method manual
+sudo nmcli con down "Wired connection 1"
+sudo nmcli con up "Wired connection 1"
+sudo reboot
+```
+
+---
+
+## SSH Keys (Passwordless)
+
+### rpa
+
+```
+ssh-keygen -t rsa
+ssh-copy-id pi@10.0.0.49
+```
+
+### rpb
+
+```
+ssh-keygen -t rsa
+ssh-copy-id pi@10.0.0.1
+```
+
+---
+
+## USB Drives Preparation
 
 - Format: FAT32  
-- Label: must be the same on both drives (for example: USB or PHOTOS)  
+- SAME label (example: USB or PHOTOS)
 
 Create:
 
@@ -73,10 +142,10 @@ Create:
 /receiving
 ```
 
-### Behavior
+Behavior:
 
-- sending (A) → receiving (B)  
-- sending (B) → receiving (A)  
+- A → B  
+- B → A  
 
 ---
 
@@ -93,15 +162,11 @@ echo "Beginning photo sync..."
 
 if [ "$(hostname)" = "rpa" ]; then
   recipient_host="10.0.0.49"
-  echo "Sending photos to "$recipient_host"..."
 else
   recipient_host="10.0.0.1"
-  echo "Sending photos to "$recipient_host"..."
 fi
 
 usb_drive_name="$(ls /media/pi/ | head -n 1)"
-
-echo "Using USB drive:" $usb_drive_name
 
 sender_path=/media/pi/$usb_drive_name/sending
 recipient_path=/media/pi/$usb_drive_name/receiving
@@ -111,26 +176,10 @@ rsync --progress -ab --recursive --ignore-times $sender_path/. pi@$recipient_hos
 echo "Fin."
 ```
 
+Make executable:
+
 ```
 chmod +x /home/pi/imagesync.sh
-```
-
----
-
-## SSH (Passwordless)
-
-### rpa
-
-```
-ssh-keygen -t rsa
-ssh-copy-id pi@10.0.0.49
-```
-
-### rpb
-
-```
-ssh-keygen -t rsa
-ssh-copy-id pi@10.0.0.1
 ```
 
 ---
@@ -163,13 +212,13 @@ See:
 [sd-card-copy-macos_en.md](sd-card-copy-macos_en.md)
 
 
-⚠️ Both USB drives MUST have the same label.
+⚠️ USB drives must have identical labels.
 
 ---
 
 ## Summary
 
-- No DHCP  
-- Static IP  
-- Hardware-independent  
-- Bidirectional sync  
+- reproducible system  
+- no DHCP  
+- hardware independent  
+- bidirectional sync  
