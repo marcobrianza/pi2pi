@@ -70,7 +70,7 @@ Before proceeding:
 
 - always run `diskutil list` immediately before writing;
 - verify the size and partition structure of the SD card;
-- double-check that the disk number (`disk6` in this example) is really the destination SD card;
+- double-check that the disk number (`diskX` in this example is intentionlay to be changed intentiolany);
 - if in doubt, stop.
 
 Insert the new SD card into the Mac and open Terminal.
@@ -84,17 +84,17 @@ diskutil list
 - Unmount the destination SD card:
 
 ```bash
-diskutil unmountDisk /dev/disk6
+diskutil unmountDisk /dev/diskX
 ```
 
 - Write the image to the new SD card:
 
 ```bash
-gunzip -c SD_RaspberryPi.img.gz | sudo dd of=/dev/rdisk6 bs=4m status=progress
+gunzip -c SD_RaspberryPi.img.gz | sudo dd of=/dev/rdiskX bs=4m status=progress
 ```
 
 - Eject the SD card:
 
 ```bash
-diskutil eject /dev/disk6
+diskutil eject /dev/diskX
 ```
